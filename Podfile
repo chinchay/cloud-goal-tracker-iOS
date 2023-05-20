@@ -8,5 +8,6 @@ target 'app' do
   # Pods for app
   pod "AWSCore"
   pod "AWSDynamoDB"  
+  pod "AWSCognitoIdentityProvider"
 
 end
