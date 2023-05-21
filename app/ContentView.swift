@@ -46,120 +46,53 @@ func listAWSTables(){
     }
 }
 
-class ViewModel: ObservableObject {
-    // @Published var items: [[String: Any]] = []
-    @Published var awsDict: [String : Any] = [:]
-    
-    
-    //func scanTable(completion: @escaping ([[String: Any]]) -> Void) {
-    func scanTable(completion: @escaping ( [String: Any] ) -> Void) {
-        let input = AWSDynamoDBScanInput()
-        input?.tableName = "sample_table_1"
-        
-        let db = AWSDynamoDB.default()
-        
-        db.scan(input!).continueWith { task in
-            if let error = task.error {
-                print("Error scanning table: \(error)")
-                completion([:])
-                //completion([])
-                //return nil
-            }
-            
-            if let result = task.result {
-                // Extract the items as dictionaries with actual values
-                let items = result.items?.map { item -> [String: Any] in
-                    var processedItem: [String: Any] = [:]
-                    
-                    // original values have AWS tags that we are not interested in
-                    // This time, our valus are either string (`.s`),
-                    // numbers (`.n`) or boolean types:
-                    for (key, attributeValue) in item {
-                        if let stringValue = attributeValue.s {
-                            processedItem[key] = stringValue
-                        } else if let numberValue = attributeValue.n {
-                            processedItem[key] = numberValue
-                        } else if let boolValue = attributeValue.boolean {
-                            processedItem[key] = boolValue
-                        }
-                        // Handle other types as needed
-                    }
-                    return processedItem
-                } ?? []
-                
-                
-                DispatchQueue.main.async {
-                    // Update the view model's property with the retrieved data
-//                    self.items = items
-//                    completion(items)
-
-                    var awsDict: [String: Any] = [:]
-                    for dict in items{
-                        if let a = dict["date"] as? String,
-                           let b = dict["read_scriptures"] as? Bool,
-                           let c = dict["wrote_journal"] as? Bool {
-                            awsDict[a] = [b, c]
-                        }
-                    }
-
-                    self.awsDict = awsDict
-                    completion(awsDict)
-                }
-            }
-            
-            return nil
-        }
-    }
-}
-
-
-func getDictionaryFromAWS(){
-//    var items = getRawItems()
-//    var items: [[String: Any]] = getRawItems()
-//    print(items)
-    
-}
-
 
 struct ContentView: View {
+    @State private var isButtonTapped = false
+    
     var body: some View {
-        VStack {
-            NavigationView {
-                VStack {
-                    Text("Main Screen")
-                    NavigationLink("Go to Additional Screen", destination: AdditionalView())
+        NavigationView {
+            VStack {
+
+                Button(action: {
+                    isButtonTapped.toggle()
+                }){
+                    Text("Purpose")
+//                        .font(.custom("Baskerville", size:30))
+//                        .frame(width: 200, height: 50)
+                        .frame(width: 200)
+                        .fontWeight(.bold)
+                        .padding(10)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     
-                    Image(systemName: "globe")
-                        .imageScale(.large)
-                        .foregroundColor(.accentColor)
-//                    Text("Hello, world!")
-                    
-                    Button("Click me to connect to AWS DynamoDB"){
-                        initAWS()
-                        listAWSTables()
-                        print("Hello world from the console!")
-                    }
-                    Button("scan"){
-                        initAWS()
-//                        getRawItems()
-                        
-                        let viewModel = ViewModel()
-//                        viewModel.scanTable { items in
-//                            print(items)
-//                        }
-                        viewModel.scanTable { awsDict in
-                            print(awsDict)
-                        }
-                        print("scanned!")
-                    }
-                    
+
                 }
-                .navigationBarTitle("Goal Tracker")
                 
+                if isButtonTapped {
+                    Text("The purpose of this Cloud Goal Tracker program is to help you to achieve your goals through gamification (turning your goals into a game)")
+                        .frame(width: 200, alignment: .center)
+                        .padding(10)
+    //                    .frame(width:300, height: 80, alignment: .center)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(10)
+                        
+                }
+                    
+                
+                NavigationLink("Show my goals history", destination: AdditionalView())
+                    .frame(width: 200)
+                    .fontWeight(.bold)
+                    .padding(10)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
-            
+            .navigationBarTitle("Goal Tracker")
         }
-        .padding()
+        
+        
     }
 }
 
